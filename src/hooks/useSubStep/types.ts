@@ -22,7 +22,7 @@ type UseSubStep<T = void> = {
     bodyContent: Array<ComponentType<SubStepProps & T>>;
 
     /** called on last sub step  */
-    onFinished: () => void;
+    onFinished: (data?: Record<string, unknown>) => void;
 
     /** index of initial sub step to display */
     startFrom?: number;

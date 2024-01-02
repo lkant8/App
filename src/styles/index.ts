@@ -21,6 +21,7 @@ import display from './utils/display';
 import editedLabelStyles from './utils/editedLabelStyles';
 import flex from './utils/flex';
 import FontUtils from './utils/FontUtils';
+import fontWeightBold from './utils/FontUtils/fontWeight/bold';
 import getPopOverVerticalOffset from './utils/getPopOverVerticalOffset';
 import objectFit from './utils/objectFit';
 import optionAlternateTextPlatformStyles from './utils/optionAlternateTextPlatformStyles';
@@ -4178,7 +4179,7 @@ const styles = (theme: ThemeColors) =>
 
         interactiveStepHeaderStepText: {
             fontSize: variables.fontSizeLabel,
-            fontFamily: fontFamily.EXP_NEUE_BOLD,
+            fontFamily: FontUtils.fontFamily.platform.EXP_NEUE_BOLD,
             fontWeight: fontWeightBold,
         },
 
@@ -4206,7 +4207,7 @@ const styles = (theme: ThemeColors) =>
         },
         confirmBankInfoText: {
             fontSize: variables.fontSizeNormal,
-            fontFamily: fontFamily.EXP_NEUE,
+            fontFamily: FontUtils.fontFamily.platform.EXP_NEUE,
             color: theme.text,
         },
         confirmBankInfoCompanyIcon: {
@@ -4223,7 +4224,7 @@ const styles = (theme: ThemeColors) =>
             borderRadius: 50,
         },
         confirmBankInfoNumber: {
-            fontFamily: fontFamily.MONOSPACE,
+            fontFamily: FontUtils.fontFamily.platform.MONOSPACE,
             fontSize: variables.fontSizeNormal,
             lineHeight: variables.lineHeightXLarge,
             color: theme.text,

@@ -25,24 +25,26 @@ const propTypes = {
 
     /** Exits flow and goes back to the workspace initial page */
     onCloseButtonPress: PropTypes.func.isRequired,
+
+    onfidoApplicantID: PropTypes.string,
 };
 
 const defaultProps = {
     reimbursementAccount: ReimbursementAccountProps.reimbursementAccountDefaultProps,
+    onfidoApplicantID: null,
 };
 
 const bodyContent = [OnfidoInitialize];
 
-function VerifyIdentity({reimbursementAccount, onBackButtonPress, onCloseButtonPress}) {
+function VerifyIdentity({reimbursementAccount, onBackButtonPress, onCloseButtonPress, onfidoApplicantID}) {
     const styles = useThemeStyles();
     const {translate} = useLocalize();
-
     const submit = useCallback(
         (onfidoData) => {
-            BankAccounts.verifyIdentityForBankAccount(getDefaultValueForReimbursementAccountField(reimbursementAccount, 'bankAccountID', 0), onfidoData);
+            BankAccounts.verifyIdentityForBankAccount(getDefaultValueForReimbursementAccountField(reimbursementAccount, 'bankAccountID', 0), {...onfidoData, applicantID: onfidoApplicantID});
             BankAccounts.updateReimbursementAccountDraft({isOnfidoSetupComplete: true});
         },
-        [reimbursementAccount],
+        [reimbursementAccount, onfidoApplicantID],
     );
 
     const {componentToRender: SubStep, isEditing, nextScreen, moveTo} = useSubStep({bodyContent, startFrom: 0, onFinished: submit});
@@ -58,7 +60,7 @@ function VerifyIdentity({reimbursementAccount, onBackButtonPress, onCloseButtonP
             <View style={[styles.ph5, styles.mv3, {height: CONST.BANK_ACCOUNT.STEPS_HEADER_HEIGHT}]}>
                 <InteractiveStepSubHeader
                     onStepSelected={() => {}}
-                    startStepIndex={3}
+                    startStepIndex={2}
                     stepNames={CONST.BANK_ACCOUNT.STEP_NAMES}
                 />
             </View>
@@ -78,5 +80,8 @@ VerifyIdentity.displayName = 'VerifyIdentity';
 export default withOnyx({
     reimbursementAccount: {
         key: ONYXKEYS.REIMBURSEMENT_ACCOUNT,
+    },
+    onfidoApplicantID: {
+        key: ONYXKEYS.ONFIDO_APPLICANT_ID,
     },
 })(VerifyIdentity);

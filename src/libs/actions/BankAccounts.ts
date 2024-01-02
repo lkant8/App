@@ -11,7 +11,7 @@ import type {BankAccountStep, BankAccountSubStep} from '@src/types/onyx/Reimburs
 import type {
     ACHContractStepProps,
     BankAccountStepProps,
-    BeneficialOwnersStepDraftProps,
+    BeneficialOwnersStepProps,
     CompanyStepProps,
     OnfidoData,
     ReimbursementAccountProps,
@@ -97,6 +97,7 @@ function clearPersonalBankAccount() {
 
 function clearOnfidoToken() {
     Onyx.merge(ONYXKEYS.ONFIDO_TOKEN, '');
+    Onyx.merge(ONYXKEYS.ONFIDO_APPLICANT_ID, '');
 }
 
 /**
@@ -168,6 +169,7 @@ function connectBankAccountWithPlaid(bankAccountID: number, selectedPlaidBankAcc
         bank?: string;
         plaidAccountID: string;
         plaidAccessToken: string;
+        canUseNewVbbaFlow: boolean;
     };
 
     const parameters: ConnectBankAccountWithPlaidParams = {
@@ -177,6 +179,7 @@ function connectBankAccountWithPlaid(bankAccountID: number, selectedPlaidBankAcc
         bank: selectedPlaidBankAccount.bankName,
         plaidAccountID: selectedPlaidBankAccount.plaidAccountID,
         plaidAccessToken: selectedPlaidBankAccount.plaidAccessToken,
+        canUseNewVbbaFlow: true,
     };
 
     API.write(commandName, parameters, getVBBADataForOnyx());
@@ -284,7 +287,14 @@ function deletePaymentBankAccount(bankAccountID: number) {
  * This action is called by the requestor step in the Verified Bank Account flow
  */
 function updatePersonalInformationForBankAccount(params: RequestorStepProps) {
-    API.write('UpdatePersonalInformationForBankAccount', params, getVBBADataForOnyx(CONST.BANK_ACCOUNT.STEP.REQUESTOR));
+    API.write(
+        'UpdatePersonalInformationForBankAccount',
+        {
+            ...params,
+            canUseNewVbbaFlow: true,
+        },
+        getVBBADataForOnyx(CONST.BANK_ACCOUNT.STEP.REQUESTOR),
+    );
 }
 
 function validateBankAccount(bankAccountID: number, validateCode: string) {
@@ -386,25 +396,32 @@ function openReimbursementAccountPage(stepToOpen: ReimbursementAccountStep, subS
  * Updates the bank account in the database with the company step data
  */
 function updateCompanyInformationForBankAccount(bankAccount: BankAccountCompanyInformation, policyID: string) {
-    type UpdateCompanyInformationForBankAccountParams = BankAccountCompanyInformation & {policyID: string};
+    type UpdateCompanyInformationForBankAccountParams = BankAccountCompanyInformation & {
+        policyID: string;
+        canUseNewVbbaFlow: boolean;
+    };
 
-    const parameters: UpdateCompanyInformationForBankAccountParams = {...bankAccount, policyID};
+    const parameters: UpdateCompanyInformationForBankAccountParams = {
+        ...bankAccount,
+        policyID,
+        canUseNewVbbaFlow: true,
+    };
 
     API.write('UpdateCompanyInformationForBankAccount', parameters, getVBBADataForOnyx(CONST.BANK_ACCOUNT.STEP.COMPANY));
 }
 
 /**
- * Add beneficial owners for the bank account to the draft
+ * Add beneficial owners for the bank account and verify the accuracy of the information provided
  */
-function updateBeneficialOwnersForBankAccountDraft(params: BeneficialOwnersStepDraftProps) {
-    Onyx.merge(ONYXKEYS.REIMBURSEMENT_ACCOUNT_DRAFT, params);
+function updateBeneficialOwnersForBankAccount(params: BeneficialOwnersStepProps) {
+    API.write('UpdateBeneficialOwnersForBankAccount', {...params, canUseNewVbbaFlow: true}, getVBBADataForOnyx());
 }
 
 /**
- * Add beneficial owners for the bank account, accept the ACH terms and conditions and verify the accuracy of the information provided
+ * accept the ACH terms and conditions and verify the accuracy of the information provided
  */
-function updateBeneficialOwnersForBankAccount(params: ACHContractStepProps) {
-    API.write('UpdateBeneficialOwnersForBankAccount', params, getVBBADataForOnyx());
+function acceptACHContractForBankAccount(params: ACHContractStepProps) {
+    API.write('AcceptACHContractForBankAccount', {...params, canUseNewVbbaFlow: true}, getVBBADataForOnyx());
 }
 
 /**
@@ -417,6 +434,7 @@ function connectBankAccountManually(bankAccountID: number, accountNumber?: strin
         accountNumber?: string;
         routingNumber?: string;
         plaidMask?: string;
+        canUseNewVbbaFlow: boolean;
     };
 
     const parameters: ConnectBankAccountManuallyParams = {
@@ -424,6 +442,7 @@ function connectBankAccountManually(bankAccountID: number, accountNumber?: strin
         accountNumber,
         routingNumber,
         plaidMask,
+        canUseNewVbbaFlow: true,
     };
 
     API.write('ConnectBankAccountManually', parameters, getVBBADataForOnyx(CONST.BANK_ACCOUNT.STEP.BANK_ACCOUNT));
@@ -436,11 +455,13 @@ function verifyIdentityForBankAccount(bankAccountID: number, onfidoData: OnfidoD
     type VerifyIdentityForBankAccountParams = {
         bankAccountID: number;
         onfidoData: string;
+        canUseNewVbbaFlow: boolean;
     };
 
     const parameters: VerifyIdentityForBankAccountParams = {
         bankAccountID,
         onfidoData: JSON.stringify(onfidoData),
+        canUseNewVbbaFlow: true,
     };
 
     API.write('VerifyIdentityForBankAccount', parameters, getVBBADataForOnyx());
@@ -508,6 +529,7 @@ function setReimbursementAccountLoading(isLoading: boolean) {
 }
 
 export {
+    acceptACHContractForBankAccount,
     addBusinessWebsiteForDraft,
     addBusinessAddressForDraft,
     addPersonalAddressForDraft,
@@ -526,7 +548,6 @@ export {
     clearReimbursementAccount,
     openReimbursementAccountPage,
     updateBeneficialOwnersForBankAccount,
-    updateBeneficialOwnersForBankAccountDraft,
     updateCompanyInformationForBankAccount,
     updatePersonalInformationForBankAccount,
     openWorkspaceView,

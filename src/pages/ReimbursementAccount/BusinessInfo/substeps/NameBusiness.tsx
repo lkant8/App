@@ -35,7 +35,7 @@ function NameBusiness({reimbursementAccount, onNext, isEditing}: NameBusinessPro
 
     const bankAccountID = getDefaultValueForReimbursementAccountField(reimbursementAccount, 'bankAccountID', 0);
 
-    const shouldDisableCompanyName = Boolean(bankAccountID && defaultCompanyName);
+    const shouldDisableCompanyName = Boolean(bankAccountID && defaultCompanyName && reimbursementAccount?.achData?.state !== 'SETUP');
 
     return (
         // @ts-expect-error TODO: Remove this once Form (https://github.com/Expensify/App/issues/31972) is migrated to TypeScript
